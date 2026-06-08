@@ -4,6 +4,7 @@ import { Hero } from './components/Hero';
 import { DashboardPreview } from './components/DashboardPreview';
 import { VehicleInventory } from './components/VehicleInventory';
 import { ToolsManagement } from './components/ToolsManagement';
+import { PhotosSections } from './components/PhotosSections';
 import { Analytics } from './components/Analytics';
 import { MaintenanceTimeline } from './components/MaintenanceTimeline';
 import { Features } from './components/Features';
@@ -17,6 +18,7 @@ export function App() {
       <main>
         <Hero />
         <DashboardPreview />
+        <PhotosSections />
         <VehicleInventory />
         <ToolsManagement />
         <Analytics />
