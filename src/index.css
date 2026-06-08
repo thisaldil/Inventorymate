@@ -36,6 +36,29 @@ h1, h2, h3, h4, h5, h6 {
 html {
   scroll-behavior: smooth;
 }
+.light,
+.light body {
+  --bg: #FFFFFF;
+  --text: #0A0A0A;
+  --panel: rgba(255,255,255,0.9);
+  --muted: #6b6b6b;
+  --gold: #D4AF37;
+}
+
+:root,
+.dark,
+.dark body {
+  --bg: #0A0A0A;
+  --text: #FFFFFF;
+  --panel: rgba(26,26,26,0.6);
+  --muted: #888888;
+  --gold: #D4AF37;
+}
+
+/* Smooth color transitions for theme toggles */
+html, body, .glass-panel, .gold-gradient-text, .bg-ulss-black, .bg-white\/5, .bg-ulss-gold {
+  transition: background-color 280ms ease, color 280ms ease, border-color 280ms ease;
+}
 .glass-panel {
   background: rgba(26, 26, 26, 0.6);
   backdrop-filter: blur(12px);

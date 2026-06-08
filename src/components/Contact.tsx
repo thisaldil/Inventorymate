@@ -8,7 +8,7 @@ export function Contact() {
     setTimeout(() => setSubmitted(false), 3000);
   };
   return (
-    <section className="py-24 bg-[#050505] border-t border-white/5 relative overflow-hidden">
+    <section id="contact" className="py-24 bg-[#050505] border-t border-white/5 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(212,175,55,0.05)_0%,transparent_50%)]"></div>
 
       <div className="max-w-3xl mx-auto px-6 md:px-12 relative z-10">

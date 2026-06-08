@@ -1,4 +1,4 @@
-import React from 'react';
+import invLogo from '../assets/inv.png';
 import { Twitter, Linkedin, Github } from 'lucide-react';
 export function Footer() {
   return (
@@ -7,15 +7,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-6 h-6 bg-ulss-gold rounded-sm flex items-center justify-center">
-                <span className="text-ulss-black font-display font-bold text-sm tracking-tighter">
-                  U
-                </span>
-              </div>
-              <span className="font-display font-bold text-lg tracking-wide text-white">
-                ULSS{' '}
-                <span className="text-white/60 font-medium">Inventories</span>
-              </span>
+              
+              <img src={invLogo} alt="ULSS Inventories" className="h-6 md:h-7 object-contain" />
             </div>
             <p className="text-sm text-white/40 leading-relaxed mb-6">
               Enterprise-grade inventory management for vehicles, tools,

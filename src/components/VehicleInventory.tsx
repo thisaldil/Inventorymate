@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { vehiclesData } from './data';
-import { Calendar, Tag } from 'lucide-react';
+import { Calendar, ChevronDown, Tag } from 'lucide-react';
 const categories = [
 'All',
 'Luxury Cars',
@@ -12,6 +12,7 @@ const categories = [
 
 export function VehicleInventory() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const filteredVehicles =
   activeCategory === 'All' ?
   vehiclesData :
@@ -47,16 +48,43 @@ export function VehicleInventory() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) =>
+          <div className="relative w-full md:w-auto">
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 text-sm font-medium rounded-sm transition-all ${activeCategory === cat ? 'bg-white text-ulss-black' : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'}`}>
-              
-                {cat}
-              </button>
-            )}
+              type="button"
+              onClick={() => setIsCategoryDropdownOpen((prev) => !prev)}
+              className="flex w-full md:w-64 items-center justify-between gap-3 rounded-sm border border-white/10 bg-white/5 px-4 py-3 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white">
+              <span className="truncate">{activeCategory}</span>
+              <ChevronDown
+                size={16}
+                className={`shrink-0 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isCategoryDropdownOpen &&
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+                className="absolute right-0 top-full z-20 mt-2 w-full md:w-64 overflow-hidden rounded-lg border border-white/10 bg-[#0b0b0b] shadow-2xl shadow-black/40">
+                {categories.map((cat) =>
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(cat);
+                    setIsCategoryDropdownOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${activeCategory === cat ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}>
+                  <span>{cat}</span>
+                  {activeCategory === cat &&
+                  <span className="text-xs uppercase tracking-wider text-ulss-gold">
+                      Active
+                    </span>}
+                </button>
+                )}
+              </motion.div>}
+            </AnimatePresence>
           </div>
         </div>
 

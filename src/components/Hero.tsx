@@ -36,6 +36,14 @@ const CountUp = ({
 
 };
 export function Hero() {
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    target?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-ulss-black">
       {/* Background Image with Overlay */}
@@ -125,14 +133,20 @@ export function Hero() {
             }}
             className="flex flex-col sm:flex-row gap-4">
             
-            <button className="bg-ulss-gold text-ulss-black px-8 py-4 rounded-sm font-semibold flex items-center justify-center gap-2 hover:bg-white transition-colors group">
-              View Inventory
+            <button
+              type="button"
+              onClick={() => scrollToSection('spare-parts')}
+              className="bg-ulss-gold text-ulss-black px-8 py-4 rounded-sm font-semibold flex items-center justify-center gap-2 hover:bg-white transition-colors group">
+              View Spare Parts Inventory
               <ChevronRight
                 size={18}
                 className="group-hover:translate-x-1 transition-transform" />
               
             </button>
-            <button className="border border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-4 rounded-sm font-semibold hover:bg-white/10 transition-colors">
+            <button
+              type="button"
+              onClick={() => scrollToSection('contact')}
+              className="border border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-4 rounded-sm font-semibold hover:bg-white/10 transition-colors">
               Request Demo
             </button>
           </motion.div>

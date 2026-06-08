@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import invLogo from '../assets/inv.png';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -11,14 +13,25 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const openLogin = () => {
+    setLoginOpen(true);
+    setMobileMenuOpen(false);
+  };
+
+  const closeLogin = () => setLoginOpen(false);
   const navLinks = [
   {
     name: 'Platform',
     href: '#platform'
   },
   {
-    name: 'Inventory',
-    href: '#inventory'
+    name: 'Spare Parts',
+    href: '#spare-parts'
   },
   {
     name: 'Analytics',
@@ -30,6 +43,7 @@ export function Navbar() {
   }];
 
   return (
+    <>
     <motion.nav
       initial={{
         y: -100
@@ -45,14 +59,8 @@ export function Navbar() {
       
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         <div className="flex items-center gap-2 cursor-pointer">
-          <div className="w-8 h-8 bg-ulss-gold rounded-sm flex items-center justify-center">
-            <span className="text-ulss-black font-display font-bold text-lg tracking-tighter">
-              U
-            </span>
-          </div>
-          <span className="font-display font-bold text-xl tracking-wide text-white">
-            ULSS <span className="text-white/60 font-medium">Inventories</span>
-          </span>
+        
+          <img src={invLogo} alt="ULSS Inventories" className="h-10 md:h-12 object-contain" />
         </div>
 
         {/* Desktop Nav */}
@@ -69,10 +77,16 @@ export function Navbar() {
             )}
           </div>
           <div className="w-px h-4 bg-white/20"></div>
-          <button className="text-sm font-medium text-white hover:text-ulss-gold transition-colors">
-            Sign In
+          <button
+            type="button"
+            onClick={openLogin}
+            className="text-sm font-medium text-white hover:text-ulss-gold transition-colors">
+            Log In
           </button>
-          <button className="bg-ulss-gold text-ulss-black px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-white transition-colors">
+          <button
+            type="button"
+            onClick={() => scrollToSection('contact')}
+            className="bg-ulss-gold text-ulss-black px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-white transition-colors">
             Request Demo
           </button>
         </div>
@@ -101,13 +115,72 @@ export function Navbar() {
         )}
           <div className="h-px w-full bg-white/10 my-2"></div>
           <button className="text-left text-lg font-medium text-white">
-            Sign In
+            Log In
           </button>
-          <button className="bg-ulss-gold text-ulss-black px-5 py-3 rounded-sm text-base font-semibold mt-2 text-center">
+          <button
+            type="button"
+            onClick={() => { scrollToSection('contact'); setMobileMenuOpen(false); }}
+            className="bg-ulss-gold text-ulss-black px-5 py-3 rounded-sm text-base font-semibold mt-2 text-center">
             Request Demo
           </button>
         </div>
       }
-    </motion.nav>);
+    </motion.nav>
 
+    <AnimatePresence>
+      {loginOpen && (
+      <motion.div
+        key="login-drawer"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex">
+
+        <div className="absolute inset-0 bg-black/50" onClick={closeLogin} />
+
+        <motion.div
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'tween', duration: 0.28 }}
+          className="ml-auto h-full w-full md:w-[420px] bg-ulss-black/95 backdrop-blur-md border-l border-white/5 p-6">
+
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-2xl font-display font-bold">Sign In</h3>
+              <p className="text-sm text-white/60">Enter your email and password to continue</p>
+            </div>
+            <button onClick={closeLogin} className="text-white/50 hover:text-white">
+              <X size={20} />
+            </button>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // fake submit: close drawer after short delay
+              setTimeout(() => {
+                setLoginOpen(false);
+              }, 600);
+            }}
+            className="space-y-4">
+            <div>
+              <label className="text-xs text-white/60 uppercase tracking-wider">Email</label>
+              <input required type="email" className="w-full mt-2 bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-white focus:outline-none focus:border-ulss-gold" />
+            </div>
+            <div>
+              <label className="text-xs text-white/60 uppercase tracking-wider">Password</label>
+              <input required type="password" className="w-full mt-2 bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-white focus:outline-none focus:border-ulss-gold" />
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
+              <button type="submit" className="bg-ulss-gold text-ulss-black px-4 py-2 rounded-sm font-semibold">Sign In</button>
+              <button type="button" onClick={closeLogin} className="text-sm text-white/60 hover:text-white">Cancel</button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>)}
+    </AnimatePresence>
+    </>
+  );
 }
