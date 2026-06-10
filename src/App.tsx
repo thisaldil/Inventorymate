@@ -2,7 +2,6 @@ import { Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { DashboardPreview } from './components/DashboardPreview';
-
 import { ToolsManagement } from './components/ToolsManagement';
 import { PhotosSections } from './components/PhotosSections';
 import { Analytics } from './components/Analytics';
@@ -12,13 +11,22 @@ import { Testimonials } from './components/Testimonials';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 
-const AdminApp = lazy(() => import('./admin/AdminApp').then((module) => ({ default: module.AdminApp })));
+const AdminApp = lazy(() => import('./admin/AdminApp'));
+
 export function App() {
-  const isAdminRoute = window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/reset-password');
+  const isAdminRoute =
+    window.location.pathname.startsWith('/admin') ||
+    window.location.pathname.startsWith('/reset-password');
 
   if (isAdminRoute) {
     return (
-      <Suspense fallback={<div className="min-h-screen bg-ulss-black text-white flex items-center justify-center">Loading admin workspace...</div>}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-ulss-black text-white flex items-center justify-center">
+            Loading admin workspace...
+          </div>
+        }
+      >
         <AdminApp />
       </Suspense>
     );
@@ -30,9 +38,7 @@ export function App() {
       <main>
         <Hero />
         <DashboardPreview />
-   
         <PhotosSections />
-       
         <ToolsManagement />
         <Analytics />
         <MaintenanceTimeline />
@@ -41,6 +47,6 @@ export function App() {
         <Contact />
       </main>
       <Footer />
-    </div>);
-
+    </div>
+  );
 }

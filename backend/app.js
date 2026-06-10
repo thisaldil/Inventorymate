@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import { env } from './config/env.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { toolRoutes } from './routes/toolRoutes.js';
@@ -15,11 +16,11 @@ import { dashboardRoutes } from './routes/dashboardRoutes.js';
 import { usersRoutes } from './routes/usersRoutes.js';
 import { errorHandler } from './middleware/error.js';
 import { notFound } from './middleware/notFound.js';
-import path from 'path';
 
 const app = express();
 
 app.use(helmet());
+// Single cors() call using env.CLIENT_URL — remove the duplicate hardcoded localhost call
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));

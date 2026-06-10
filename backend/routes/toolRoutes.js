@@ -6,7 +6,10 @@ import { authorize } from '../middleware/role.js';
 import { upload } from '../middleware/upload.js';
 
 const router = Router();
-const controller = createCrudController(Tool, { searchFields: ['toolId', 'toolName', 'brand', 'serialNumber', 'category'], filterFields: ['status', 'category', 'brand'] });
+const controller = createCrudController(Tool, { searchFields: ['toolId', 'toolName', 'brand', 'serialNumber', 'category'], filterFields: ['status', 'category', 'brand'],populate: [
+  'warehouse',
+  'assignedTechnician'
+] });
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);

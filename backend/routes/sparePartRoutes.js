@@ -5,7 +5,16 @@ import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/role.js';
 
 const router = Router();
-const controller = createCrudController(SparePart, { searchFields: ['partNumber', 'partName', 'category', 'supplier', 'compatibleVehicleMake', 'compatibleVehicleModel'], filterFields: ['status', 'category', 'compatibleVehicleMake', 'compatibleVehicleModel'] });
+
+const controller = createCrudController(SparePart, {
+  // Removed 'compatibleVehicleMake' and 'compatibleVehicleModel' — these are not top-level
+  // fields; they live inside compatibleVehicles[].make / .model. The crudFactory regex search
+  // won't reach nested array fields. Use 'compatibleVehicles.make' / 'compatibleVehicles.model'
+  // if you upgrade crudFactory to support dot-notation, or add a dedicated search endpoint.
+  searchFields: ['partNumber', 'partName', 'category', 'brand', 'oemNumber'],
+  filterFields: ['status', 'category', 'partCondition'],
+  populate: ['warehouse', 'supplier'],
+});
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);

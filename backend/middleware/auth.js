@@ -13,6 +13,8 @@ export const protect = async (req, _res, next) => {
     if (!user || !user.active) return next(new AppError('User not authorized', 401));
     if ((user.tokenVersion || 0) !== (payload.ver || 0)) return next(new AppError('Session expired', 401));
     req.user = user;
+    // Set req.userRole consistently so authorize() middleware always finds it
+    req.userRole = typeof user.role === 'string' ? user.role : user.role?.name;
     next();
   } catch {
     next(new AppError('Invalid or expired token', 401));
@@ -40,6 +42,7 @@ export const optionalProtect = async (req, _res, next) => {
       return next();
     }
     req.user = user;
+    req.userRole = typeof user.role === 'string' ? user.role : user.role?.name;
     next();
   } catch {
     req.user = null;

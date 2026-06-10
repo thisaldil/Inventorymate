@@ -5,7 +5,12 @@ import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/role.js';
 
 const router = Router();
-const controller = createCrudController(MaintenanceRecord, { searchFields: ['maintenanceId', 'description'], filterFields: ['status'] });
+
+const controller = createCrudController(MaintenanceRecord, {
+  searchFields: ['maintenanceId', 'maintenanceType', 'description'],
+  filterFields: ['status', 'priority'],
+  populate: ['toolId', 'vehicleId', 'technician'],
+});
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'WORKSHOP_MANAGER', 'INVENTORY_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'WORKSHOP_MANAGER', 'INVENTORY_MANAGER'), controller.getOne);

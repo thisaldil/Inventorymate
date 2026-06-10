@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import User from '../models/User.js';
 import Role from '../models/Role.js';
 import { AppError } from '../utils/AppError.js';
@@ -33,14 +32,7 @@ const resolveRole = async (roleInput, fallbackRoleName) => {
 export const createUser = asyncHandler(async (req, res, next) => {
   if (!req.user) return next(new AppError('Authentication required', 401));
 
-  const {
-    name,
-    email,
-    password,
-    phone,
-    role,
-    active = true,
-  } = req.body;
+  const { name, email, password, phone, role, active = true } = req.body;
 
   if (!name || !email || !password) return next(new AppError('Name, email, and password are required', 400));
   if (password.length < 8) return next(new AppError('Password must be at least 8 characters', 400));
@@ -63,13 +55,7 @@ export const createUser = asyncHandler(async (req, res, next) => {
 });
 
 export const createAdmin = asyncHandler(async (req, res, next) => {
-  const {
-    name,
-    email,
-    password,
-    phone,
-    active = true,
-  } = req.body;
+  const { name, email, password, phone, active = true } = req.body;
 
   if (!name || !email || !password) return next(new AppError('Name, email, and password are required', 400));
   if (password.length < 8) return next(new AppError('Password must be at least 8 characters', 400));
@@ -170,7 +156,8 @@ export const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: userPayload(req.user) });
 });
 
-export const bootstrapAdmin = asyncHandler(async (_req, res) => {
+// Renamed from bootstrapAdmin — this simply returns available roles for use in forms/UI
+export const getRoles = asyncHandler(async (_req, res) => {
   const roles = await Role.find().sort('name');
   res.json({ success: true, data: roles });
 });

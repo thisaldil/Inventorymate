@@ -6,8 +6,28 @@ import { authorize } from '../middleware/role.js';
 import { upload } from '../middleware/upload.js';
 
 const router = Router();
-const controller = createCrudController(Vehicle, { searchFields: ['vehicleId', 'make', 'model', 'registrationNumber', 'chassisNumber', 'color'], filterFields: ['status', 'make', 'model', 'year'] });
+const controller = createCrudController(
+  Vehicle,
+  {
+    searchFields: [
+      'vehicleId',
+      'make',
+      'model',
+      'registrationNumber',
+      'vinNumber'
+    ],
 
+    filterFields: [
+      'status',
+      'vehicleType',
+      'condition'
+    ],
+
+    populate: [
+      'warehouse'
+    ]
+  }
+);
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);
 router.post('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), upload.array('images', 10), (req, _res, next) => {

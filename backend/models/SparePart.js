@@ -1,19 +1,118 @@
 import mongoose from 'mongoose';
 
+const compatibleVehicleSchema = new mongoose.Schema(
+  {
+    make: String,
+    model: String,
+    yearFrom: Number,
+    yearTo: Number,
+  },
+  { _id: false }
+);
+
 const sparePartSchema = new mongoose.Schema(
   {
-    partNumber: { type: String, required: true, unique: true, trim: true },
-    partName: { type: String, required: true, trim: true },
-    category: { type: String, required: true, trim: true },
-    compatibleVehicleMake: { type: String, trim: true },
-    compatibleVehicleModel: { type: String, trim: true },
-    quantity: { type: Number, required: true, min: 0, default: 0 },
-    minimumQuantity: { type: Number, required: true, min: 0, default: 0 },
-    unitPrice: { type: Number, required: true, min: 0 },
-    supplier: { type: String, trim: true },
-    status: { type: String, enum: ['In Stock', 'Limited', 'On Order', 'Out Of Stock'], default: 'In Stock' },
+    partNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    partName: {
+      type: String,
+      required: true,
+    },
+
+    description: String,
+
+    category: {
+      type: String,
+      required: true,
+    },
+
+    subCategory: String,
+
+    brand: String,
+
+    oemNumber: String,
+
+    barcode: String,
+
+    compatibleVehicles: [compatibleVehicleSchema],
+
+    warehouse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+    },
+
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Supplier',
+    },
+
+    rackLocation: String,
+
+    binLocation: String,
+
+    quantity: {
+      type: Number,
+      default: 0,
+    },
+
+    reservedQuantity: {
+      type: Number,
+      default: 0,
+    },
+
+    reorderLevel: {
+      type: Number,
+      default: 0,
+    },
+
+    minimumQuantity: {
+      type: Number,
+      default: 0,
+    },
+
+    unitCost: {
+      type: Number,
+      default: 0,
+    },
+
+    sellingPrice: {
+      type: Number,
+      default: 0,
+    },
+
+    purchaseDate: Date,
+
+    lastRestockedDate: Date,
+
+    warrantyPeriod: String,
+
+    partCondition: {
+      type: String,
+      enum: ['New', 'Used', 'Refurbished'],
+      default: 'New',
+    },
+
+    image: String,
+
+    notes: String,
+
+    status: {
+      type: String,
+      enum: [
+        'In Stock',
+        'Low Stock',
+        'On Order',
+        'Out Of Stock',
+      ],
+      default: 'In Stock',
+    },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export default mongoose.model('SparePart', sparePartSchema);
