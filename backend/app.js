@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { toolRoutes } from './routes/toolRoutes.js';
@@ -19,9 +20,15 @@ import { notFound } from './middleware/notFound.js';
 
 const app = express();
 
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(helmet());
-// Single cors() call using env.CLIENT_URL — remove the duplicate hardcoded localhost call
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+app.use(cors({
+  origin: env.CLIENT_URL,
+  credentials: true,
+}));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -39,7 +46,11 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'ulss-backend', timestamp: new Date().toISOString() });
 });
 
-app.use('/uploads', express.static(path.resolve('backend/uploads')));
+// ⚠️ Local file serving — only works outside Vercel (no persistent filesystem)
+// On Vercel, serve uploads via Cloudinary/S3 instead
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -52,5 +63,13 @@ app.use('/api/users', usersRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
+
+// Local dev server — Vercel uses the export below, not this
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
 export default app;
