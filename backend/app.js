@@ -18,20 +18,13 @@ import { dashboardRoutes } from './routes/dashboardRoutes.js';
 import { usersRoutes } from './routes/usersRoutes.js';
 import { errorHandler } from './middleware/error.js';
 import { notFound } from './middleware/notFound.js';
-
 import { connectDB } from './config/db.js';
-
-// Call it immediately when the module loads
-connectDB()
-  .then(() => console.log('✅ MongoDB connected successfully'))
-  .catch(err => console.error('❌ MongoDB connection failed:', err.message));
 
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Required for Vercel — trust the first proxy
 app.set('trust proxy', 1);
 
 app.use(helmet());
@@ -53,13 +46,21 @@ app.use(
     max: 200,
     standardHeaders: true,
     legacyHeaders: false,
-    // ✅ Tells rate-limit to trust the proxy-forwarded IP
     validate: { xForwardedForHeader: false },
   }),
 );
 
+// ✅ Connect DB on every /api request (cached after first connection)
+app.use('/api', async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('❌ DB connection failed:', err.message);
+    res.status(503).json({ success: false, message: 'Database unavailable' });
+  }
+});
 
-// ✅ Root health check so "/" returns something useful
 app.get('/', (_req, res) => {
   res.json({ ok: true, service: 'inventorymate-api', version: '1.0.0' });
 });

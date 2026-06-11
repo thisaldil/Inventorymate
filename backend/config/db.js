@@ -1,18 +1,27 @@
 import mongoose from 'mongoose';
-import dns from 'dns';
 import { env } from './env.js';
 
+// Cache connection across serverless invocations
+let cached = global._mongoose || { conn: null, promise: null };
+global._mongoose = cached;
+
 export const connectDB = async () => {
-  if (!env.MONGODB_URI) {
-    throw new Error('MONGODB_URI is not configured');
+  if (!env.MONGODB_URI) throw new Error('MONGODB_URI is not configured');
+
+  if (cached.conn) {
+    console.log('✅ Using cached MongoDB connection');
+    return cached.conn;
   }
 
-  mongoose.set('strictQuery', true);
-  if (env.MONGODB_URI.startsWith('mongodb+srv://')) {
-    // Some Windows/network setups refuse SRV lookups via the default resolver.
-    // Override with public resolvers so Atlas SRV resolution succeeds more reliably.
-    dns.setServers(['1.1.1.1', '8.8.8.8']);
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+    });
   }
-  await mongoose.connect(env.MONGODB_URI);
-  console.log('MongoDB connected');
+
+  cached.conn = await cached.promise;
+  console.log('✅ MongoDB connected');
+  return cached.conn;
 };
