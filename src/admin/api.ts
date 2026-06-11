@@ -1,6 +1,5 @@
 // ─── Base ────────────────────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL ?? 'https://inventorymate.vercel.app/api
-';
+const API_BASE = import.meta.env.VITE_API_URL ?? 'https://inventorymate.vercel.app/api';
 
 // ─── Shared Types ─────────────────────────────────────────────────────────────
 
