@@ -18,6 +18,11 @@ import { usersRoutes } from './routes/usersRoutes.js';
 import { errorHandler } from './middleware/error.js';
 import { notFound } from './middleware/notFound.js';
 
+import { connectDB } from './config/db.js';
+
+// Call it immediately when the module loads
+connectDB().catch(err => console.error('MongoDB connection failed:', err));
+
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
