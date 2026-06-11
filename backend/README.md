@@ -15,7 +15,8 @@
 
 ## API Base
 
-- `http://localhost:4000/api`
+- `https://inventorymate.vercel.app/api
+`
 
 ## Auth
 
