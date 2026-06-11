@@ -20,9 +20,11 @@ import { notFound } from './middleware/notFound.js';
 
 const app = express();
 
-// ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ✅ Required for Vercel — trust the first proxy
+app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({
@@ -39,15 +41,20 @@ app.use(
     max: 200,
     standardHeaders: true,
     legacyHeaders: false,
+    // ✅ Tells rate-limit to trust the proxy-forwarded IP
+    validate: { xForwardedForHeader: false },
   }),
 );
 
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'ulss-backend', timestamp: new Date().toISOString() });
+// ✅ Root health check so "/" returns something useful
+app.get('/', (_req, res) => {
+  res.json({ ok: true, service: 'inventorymate-api', version: '1.0.0' });
 });
 
-// ⚠️ Local file serving — only works outside Vercel (no persistent filesystem)
-// On Vercel, serve uploads via Cloudinary/S3 instead
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'inventorymate-api', timestamp: new Date().toISOString() });
+});
+
 if (process.env.NODE_ENV !== 'production') {
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
@@ -64,12 +71,9 @@ app.use('/api/users', usersRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// Local dev server — Vercel uses the export below, not this
 if (process.env.NODE_ENV !== 'production') {
   const PORT = env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 export default app;
