@@ -15,7 +15,8 @@
 
 ## API Base
 
-- `https://inventorymate.vercel.app/api
+- `https://inventorymate.vercel.app/
+
 `
 
 ## Auth
