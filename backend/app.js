@@ -28,7 +28,11 @@ app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({
-  origin: env.CLIENT_URL,
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    env.CLIENT_URL,
+  ].filter(Boolean),
   credentials: true,
 }));
 app.use(express.json({ limit: '2mb' }));
@@ -45,6 +49,7 @@ app.use(
     validate: { xForwardedForHeader: false },
   }),
 );
+
 
 // ✅ Root health check so "/" returns something useful
 app.get('/', (_req, res) => {
