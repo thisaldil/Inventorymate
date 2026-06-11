@@ -21,7 +21,9 @@ import { notFound } from './middleware/notFound.js';
 import { connectDB } from './config/db.js';
 
 // Call it immediately when the module loads
-connectDB().catch(err => console.error('MongoDB connection failed:', err));
+connectDB()
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.error('❌ MongoDB connection failed:', err.message));
 
 const app = express();
 
