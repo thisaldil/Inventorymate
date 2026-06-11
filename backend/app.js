@@ -65,7 +65,14 @@ app.get('/', (_req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'inventorymate-api', timestamp: new Date().toISOString() });
+  const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  res.json({ 
+    ok: true, 
+    service: 'inventorymate-api', 
+    timestamp: new Date().toISOString(),
+    db: states[mongoose.connection.readyState],
+    mongoConfigured: !!env.MONGODB_URI,
+  });
 });
 
 if (process.env.NODE_ENV !== 'production') {
