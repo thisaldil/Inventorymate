@@ -1,6 +1,5 @@
 // ─── Base ────────────────────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL ?? 'https://inventorymate.vercel.app/';
-
+const API_BASE = import.meta.env.VITE_API_URL ?? 'https://inventorymate.vercel.app/api';
 // ─── Shared Types ─────────────────────────────────────────────────────────────
 
 export type Role = {
@@ -326,8 +325,8 @@ async function request<T>(
 // Mirrors authController.js + authRoutes.js (with getRoles fix)
 
 export const authApi = {
-  login: (email: string, password: string) =>
-    request<AuthSession>('api/auth/login', {
+login: (email: string, password: string) =>
+    request<AuthSession>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
