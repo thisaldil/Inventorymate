@@ -328,7 +328,7 @@ async function request<T>(
 
 export const authApi = {
   login: (email: string, password: string) =>
-    request<AuthSession>('auth/login', {
+    request<AuthSession>('api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
