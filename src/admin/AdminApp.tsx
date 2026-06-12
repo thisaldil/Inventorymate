@@ -1151,6 +1151,14 @@ function LoginScreen({ onLogin }: { onLogin: (session: { user: AuthUser; accessT
               >
                 {loading ? 'Signing in…' : 'Sign in'}
               </button>
+              <a
+              href="https://ulss-spareparts.vercel.app/"
+  className="w-full block text-center rounded-lg border border-ulss-gold/20 px-4 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/5 hover:text-white transition-colors mt-2"
+>
+  Back to website
+</a>
+              
+              
             </form>
           </div>
         </div>
