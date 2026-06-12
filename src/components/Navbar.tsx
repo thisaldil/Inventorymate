@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import invLogo from '../assets/inv.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { authApi, authStorage } from '../admin/api';
 
 export function Navbar() {
   const [email, setEmail] = useState('');
@@ -25,50 +26,35 @@ export function Navbar() {
     target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
-      setError('');
+  try {
+    setLoading(true);
+    setError('');
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await authApi.login(email, password);
+    const session = res.data as any;
 
-      // Safely parse JSON — guard against empty body
-      const text = await response.text();
-      let result: any = {};
-      try {
-        result = text ? JSON.parse(text) : {};
-      } catch {
-        throw new Error('Server returned an invalid response. Please try again.');
-      }
+    const accessToken = session.accessToken ?? session.token;
+    const refreshToken = session.refreshToken ?? '';
+    const user = session.user;
 
-      if (!response.ok) {
-        throw new Error(result.message || `Login failed (${response.status})`);
-      }
-
-      const { accessToken, refreshToken, user } = result.data ?? result;
-
-      if (!accessToken) {
-        throw new Error('No access token received. Check your API response structure.');
-      }
-
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(user));
-
-      setLoginOpen(false);
-      window.location.href = '/admin';
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    if (!accessToken) {
+      throw new Error('No access token received. Check your API response structure.');
     }
-  };
+
+    // Store in the SAME format AdminApp expects
+    authStorage.set({ user, accessToken, refreshToken });
+
+    setLoginOpen(false);
+    window.location.href = '/admin';
+  } catch (err: any) {
+    setError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const openLogin = () => {
     setLoginOpen(true);
@@ -235,10 +221,7 @@ export function Navbar() {
                   </div>
                 )}
 
-                {/* Debug helper — remove after confirming API URL is correct */}
-                <p className="text-xs text-white/30">
-                  API: {import.meta.env.VITE_API_URL || '⚠️ VITE_API_URL not set'}
-                </p>
+               
 
                 <div className="flex items-center justify-between mt-4">
                   <button
