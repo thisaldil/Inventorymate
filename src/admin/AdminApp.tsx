@@ -1391,17 +1391,17 @@ export default function AdminApp() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar (mobile only) */}
-        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-1.5 rounded hover:bg-gray-100"
-          >
-            <ChevronDown size={18} className="rotate-90" />
-          </button>
-          <span className="font-semibold text-gray-800 text-sm">
-            {NAV.find((n) => n.id === section)?.label}
-          </span>
-        </header>
+      <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-ulss-black border-b border-ulss-gold/10">
+  <button
+    onClick={() => setSidebarOpen(true)}
+    className="p-1.5 rounded hover:bg-white/10 text-white/70"
+  >
+    <ChevronDown size={18} className="rotate-90" />
+  </button>
+  <span className="font-semibold text-white text-sm">
+    {NAV.find((n) => n.id === section)?.label}
+  </span>
+</header>
 
         <main className="flex-1 overflow-y-auto p-5 md:p-8 bg-ulss-black">
           {sectionEl}
