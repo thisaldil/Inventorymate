@@ -44,6 +44,7 @@ import {
   vehiclesApi,
   techniciansApi,
   maintenanceApi,
+  suppliersApi,  
   type AuthUser,
   type DashboardData,
   type Tool,
@@ -51,6 +52,7 @@ import {
   type Vehicle,
   type Technician,
   type MaintenanceRecord,
+  type Supplier,  
   type ListParams,
 } from './api';
 
@@ -62,7 +64,8 @@ type Section =
   | 'spare-parts'
   | 'vehicles'
   | 'technicians'
-  | 'maintenance';
+  | 'maintenance'
+  | 'suppliers';
 
 type ModalMode = 'view' | 'edit' | 'create';
 
@@ -1016,6 +1019,65 @@ const maintenanceConfig: ResourceConfig<MaintenanceRecord> = {
   canDelete: (r) => ['SUPER_ADMIN', 'WORKSHOP_MANAGER'].includes(r),
 };
 
+// ─── Supplier Config ──────────────────────────────────────────────────────────
+
+const SUPPLIER_STATUS = ['Active', 'Inactive'];
+
+const suppliersConfig: ResourceConfig<Supplier> = {
+  title: 'Suppliers',
+  endpoint: 'suppliers',
+  searchPlaceholder: 'Search by code, name, email…',
+  filterField: 'status',
+  filterOptions: SUPPLIER_STATUS,
+  listFn: suppliersApi.list,
+  createFn: suppliersApi.create,
+  updateFn: suppliersApi.update,
+  deleteFn: suppliersApi.remove,
+  columns: [
+    { label: 'Code',    render: (s) => <span className="font-mono text-xs">{s.supplierCode}</span> },
+    { label: 'Name',    render: (s) => <span className="font-medium">{s.name}</span> },
+    { label: 'Email',   render: (s) => <span className="text-ulss-gold/50">{s.email ?? '—'}</span> },
+    { label: 'Phone',   render: (s) => s.phone ?? '—' },
+    { label: 'Website', render: (s) => s.website
+        ? <a href={s.website} target="_blank" rel="noreferrer" className="text-blue-400 underline text-xs">{s.website}</a>
+        : '—'
+    },
+    { label: 'Status',  render: (s) => statusBadge(s.status) },
+  ],
+  viewFields: [
+    { label: 'Supplier Code', key: 'supplierCode' },
+    { label: 'Name',          key: 'name' },
+    { label: 'Email',         key: 'email' },
+    { label: 'Phone',         key: 'phone' },
+    { label: 'Website',       key: 'website' },
+    { label: 'Address',       key: 'address' },
+    { label: 'Status',        key: 'status' },
+    { label: 'Created',       key: (s) => fmt.date(s.createdAt) },
+    { label: 'Updated',       key: (s) => fmt.date(s.updatedAt) },
+  ],
+  defaultForm: () => ({
+    supplierCode: '',
+    name: '',
+    email: '',
+    phone: '',
+    website: '',
+    address: '',
+    status: 'Active',
+  }),
+  formFields: [
+    { label: 'Supplier Code', name: 'supplierCode' },
+    { label: 'Name',          name: 'name' },
+    { label: 'Email',         name: 'email',   type: 'email' },
+    { label: 'Phone',         name: 'phone' },
+    { label: 'Website',       name: 'website', type: 'url' },
+    { label: 'Address',       name: 'address' },
+    { label: 'Status',        name: 'status',  options: SUPPLIER_STATUS },
+  ],
+  canCreate: (r) => ['SUPER_ADMIN', 'INVENTORY_MANAGER'].includes(r),
+  canEdit:   (r) => ['SUPER_ADMIN', 'INVENTORY_MANAGER'].includes(r),
+  canDelete: (r) => ['SUPER_ADMIN'].includes(r),
+};
+
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 
 function LoginScreen({ onLogin }: { onLogin: (session: { user: AuthUser; accessToken: string; refreshToken: string }) => void }) {
@@ -1248,6 +1310,7 @@ const NAV: Array<{ id: Section; label: string; icon: React.ReactNode }> = [
   { id: 'vehicles', label: 'Vehicles', icon: <Truck size={18} /> },
   { id: 'technicians', label: 'Technicians', icon: <Users size={18} /> },
   { id: 'maintenance', label: 'Maintenance', icon: <CalendarClock size={18} /> },
+  { id: 'suppliers',   label: 'Suppliers',   icon: <Box size={18} /> },
 ];
 
 function Sidebar({
@@ -1381,6 +1444,8 @@ export default function AdminApp() {
         return <ResourceSection config={techniciansConfig} token={token} userRole={userRole} />;
       case 'maintenance':
         return <ResourceSection config={maintenanceConfig} token={token} userRole={userRole} />;
+        case 'suppliers':
+  return <ResourceSection config={suppliersConfig} token={token} userRole={userRole} />;
     }
   })();
 
