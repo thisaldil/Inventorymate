@@ -8,8 +8,18 @@ const start = async () => {
   await connectDB();
   await seedRoles();
   await seedDefaultAdmin();
-  app.listen(env.PORT, () => {
+
+  const server = app.listen(env.PORT, () => {
     console.log(`ULSS backend running on port ${env.PORT}`);
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${env.PORT} is already in use. Stop the other server or set PORT to a free port.`);
+      process.exit(1);
+    }
+
+    throw error;
   });
 };
 

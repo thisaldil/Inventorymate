@@ -93,9 +93,4 @@ app.use('/api/suppliers', supplierRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
 export default app;
