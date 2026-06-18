@@ -68,7 +68,7 @@ type Section =
   | 'vehicles'
   | 'technicians'
   | 'maintenance'
-  | 'suppliers';
+  | 'suppliers'
   | 'import';
 
 type ModalMode = 'view' | 'edit' | 'create';
@@ -1450,8 +1450,12 @@ export default function AdminApp() {
         return <ResourceSection config={techniciansConfig} token={token} userRole={userRole} />;
       case 'maintenance':
         return <ResourceSection config={maintenanceConfig} token={token} userRole={userRole} />;
-        case 'suppliers':
-  return <ResourceSection config={suppliersConfig} token={token} userRole={userRole} />;
+      case 'suppliers':
+        return <ResourceSection config={suppliersConfig} token={token} userRole={userRole} />;
+      case 'import':
+        return <ResourceSection config={importConfig} token={token} userRole={userRole} />;
+ case 'import':
+  return <ExcelImport token={token} />;
     }
   })();
 
