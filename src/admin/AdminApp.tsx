@@ -1453,9 +1453,7 @@ export default function AdminApp() {
       case 'suppliers':
         return <ResourceSection config={suppliersConfig} token={token} userRole={userRole} />;
       case 'import':
-        return <ResourceSection config={importConfig} token={token} userRole={userRole} />;
- case 'import':
-  return <ExcelImport token={token} />;
+        return <ExcelImport token={token} />;
     }
   })();
 
