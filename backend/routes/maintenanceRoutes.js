@@ -11,7 +11,9 @@ const controller = createCrudController(MaintenanceRecord, {
   filterFields: ['status', 'priority'],
   populate: ['toolId', 'vehicleId', 'technician'],
 });
-router.post('/bulk-import', authenticate, authorize(['SUPER_ADMIN', 'WORKSHOP_MANAGER']), bulkImport);
+
+// ✅ bulk-import BEFORE /:id
+router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'WORKSHOP_MANAGER'), controller.bulkImport);
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'WORKSHOP_MANAGER', 'INVENTORY_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'WORKSHOP_MANAGER', 'INVENTORY_MANAGER'), controller.getOne);

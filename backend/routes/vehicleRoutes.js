@@ -9,26 +9,14 @@ const router = Router();
 const controller = createCrudController(
   Vehicle,
   {
-    searchFields: [
-      'vehicleId',
-      'make',
-      'model',
-      'registrationNumber',
-      'vinNumber'
-    ],
-
-    filterFields: [
-      'status',
-      'vehicleType',
-      'condition'
-    ],
-
-    populate: [
-      'warehouse'
-    ]
+    searchFields: ['vehicleId', 'make', 'model', 'registrationNumber', 'vinNumber'],
+    filterFields: ['status', 'vehicleType', 'condition'],
+    populate: ['warehouse']
   }
 );
-router.post('/bulk-import', authenticate, authorize(['SUPER_ADMIN', 'INVENTORY_MANAGER']), bulkImport);
+
+// ✅ bulk-import BEFORE /:id
+router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.bulkImport);
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);
