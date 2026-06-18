@@ -6,6 +6,7 @@ import { authorize } from '../middleware/role.js';
 
 const router = Router();
 const controller = createCrudController(Technician, { searchFields: ['employeeId', 'name', 'email', 'phone', 'department'], filterFields: ['status', 'department'] });
+router.post('/bulk-import', authenticate, authorize(['SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER']), bulkImport);
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);

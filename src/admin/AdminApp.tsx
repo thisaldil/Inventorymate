@@ -33,6 +33,7 @@ import {
   X,
   CheckCircle,
   Clock,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 import {
@@ -56,6 +57,8 @@ import {
   type ListParams,
 } from './api';
 
+import { ExcelImport } from './components/ExcelImport';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Section =
@@ -66,6 +69,7 @@ type Section =
   | 'technicians'
   | 'maintenance'
   | 'suppliers';
+  | 'import';
 
 type ModalMode = 'view' | 'edit' | 'create';
 
@@ -1311,6 +1315,8 @@ const NAV: Array<{ id: Section; label: string; icon: React.ReactNode }> = [
   { id: 'technicians', label: 'Technicians', icon: <Users size={18} /> },
   { id: 'maintenance', label: 'Maintenance', icon: <CalendarClock size={18} /> },
   { id: 'suppliers',   label: 'Suppliers',   icon: <Box size={18} /> },
+  { id: 'import', label: 'Bulk Import', icon: <FileSpreadsheet size={18} /> },
+
 ];
 
 function Sidebar({

@@ -6,14 +6,19 @@ import { authorize } from '../middleware/role.js';
 import { upload } from '../middleware/upload.js';
 
 const router = Router();
-const controller = createCrudController(Tool, { searchFields: ['toolId', 'toolName', 'brand', 'serialNumber', 'category'], filterFields: ['status', 'category', 'brand'],populate: [
-  'warehouse',
-  'assignedTechnician'
-] });
+const controller = createCrudController(Tool, {
+  searchFields: ['toolId', 'toolName', 'brand', 'serialNumber', 'category'],
+  filterFields: ['status', 'category', 'brand'],
+  populate: ['warehouse', 'assignedTechnician'],
+});
 
-router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
+router.get('/',    protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
+
+// ✅ bulk-import BEFORE /:id
+router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.bulkImport);
+
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);
-router.post('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), upload.single('toolImage'), (req, _res, next) => {
+router.post('/',   protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), upload.single('toolImage'), (req, _res, next) => {
   if (req.file) req.body.toolImage = `/uploads/${req.file.filename}`;
   next();
 }, controller.createOne);

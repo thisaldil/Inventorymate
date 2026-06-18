@@ -132,3 +132,37 @@ export const createCrudController = (Model, options = {}) => {
     deleteOne,
   };
 };
+
+const bulkImport = asyncHandler(async (req, res) => {
+  const { records } = req.body;
+
+  if (!Array.isArray(records) || records.length === 0) {
+    return res.status(400).json({ success: false, message: 'No records provided.' });
+  }
+
+  let inserted = 0;
+  const errors = [];
+
+  for (let i = 0; i < records.length; i++) {
+    try {
+      await Model.create(records[i]);
+      inserted++;
+    } catch (err) {
+      errors.push({ row: i + 2, message: err.message }); // +2 accounts for Excel header row
+    }
+  }
+
+  res.json({
+    success: true,
+    data: { inserted, failed: errors.length, errors },
+  });
+});
+
+return {
+  getAll,
+  getOne,
+  createOne,
+  updateOne,
+  deleteOne,
+  bulkImport,   // ← add this to the return
+};

@@ -28,6 +28,8 @@ const controller = createCrudController(
     ]
   }
 );
+router.post('/bulk-import', authenticate, authorize(['SUPER_ADMIN', 'INVENTORY_MANAGER']), bulkImport);
+
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);
 router.post('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), upload.array('images', 10), (req, _res, next) => {

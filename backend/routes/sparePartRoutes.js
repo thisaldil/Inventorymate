@@ -15,6 +15,7 @@ const controller = createCrudController(SparePart, {
   filterFields: ['status', 'category', 'partCondition'],
   populate: ['warehouse', 'supplier'],
 });
+router.post('/bulk-import', authenticate, authorize(['SUPER_ADMIN', 'INVENTORY_MANAGER']), bulkImport);
 
 router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);

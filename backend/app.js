@@ -19,7 +19,7 @@ import { usersRoutes } from './routes/usersRoutes.js';
 import { errorHandler } from './middleware/error.js';
 import { notFound } from './middleware/notFound.js';
 import { connectDB } from './config/db.js';
-
+import { supplierRoutes } from './routes/supplierRoutes.js';
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -88,6 +88,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/technicians', technicianRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/suppliers', supplierRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
