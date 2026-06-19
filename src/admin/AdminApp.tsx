@@ -262,7 +262,7 @@ function Select({
         onChange={onChange}
         className="w-full rounded-lg border border-ulss-gold/20 bg-[#0f0f0f] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-ulss-gold/40"
       >
-        <option value="">All</option>
+        <option value="">Select...</option>
         {options.map((o) => (
           <option key={o} value={o}>
             {o}
@@ -405,7 +405,8 @@ type ResourceConfig<T> = {
     label: string;
     name: string;
     type?: string;
-    options?: string[];
+    options?: string[] | ((form: Record<string, string | number>) => string[]);
+    resetFields?: string[];
   }>;
   canCreate: (role: string) => boolean;
   canEdit: (role: string) => boolean;
@@ -476,7 +477,15 @@ function ResourceSection<T extends { _id: string }>({
   };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    const field = config.formFields.find((f) => f.name === name);
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      field?.resetFields?.forEach((resetField) => {
+        next[resetField] = '';
+      });
+      return next;
+    });
   };
 
   const handleSave = async () => {
@@ -664,14 +673,16 @@ className="rounded-lg border border-ulss-gold/20 bg-ulss-black text-white/60 px-
           onClose={() => setModal(null)}
         >
           <div>
-            {config.formFields.map((f) =>
-              f.options ? (
+            {config.formFields.map((f) => {
+              const options = typeof f.options === 'function' ? f.options(form) : f.options;
+
+              return options ? (
                 <Select
                   key={f.name}
                   label={f.label}
                   name={f.name}
                   value={String(form[f.name] ?? '')}
-                  options={f.options}
+                  options={options}
                   onChange={handleFormChange}
                 />
               ) : (
@@ -683,8 +694,8 @@ className="rounded-lg border border-ulss-gold/20 bg-ulss-black text-white/60 px-
                   value={form[f.name] ?? ''}
                   onChange={handleFormChange}
                 />
-              ),
-            )}
+              );
+            })}
 
             {formError && (
               <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-3">
@@ -772,6 +783,137 @@ const toolsConfig: ResourceConfig<Tool> = {
 
 const PART_STATUS = ['In Stock', 'Low Stock', 'On Order', 'Out Of Stock'];
 const PART_CONDITION = ['New', 'Used', 'Refurbished'];
+const PART_CATEGORIES = [
+  'Engine & Drivetrain',
+  'Transmission & Gearbox',
+  'Brakes',
+  'Suspension & Steering',
+  'Electrical & Ignition',
+  'Fuel & Intake',
+  'Cooling System',
+  'Exhaust System',
+  'Body & Exterior',
+  'Lighting',
+  'Interior & Comfort',
+  'Wheels & Tyres',
+  'Filters & Service Items',
+  'Gaskets & Seals',
+];
+const PART_SUB_CATEGORIES: Record<string, string[]> = {
+  'Engine & Drivetrain': [
+    'Engine Assembly',
+    'Cylinder Head & Block',
+    'Pistons & Bearings',
+    'Timing Components',
+    'Valves & Rocker Gear',
+    'Oil System',
+    'Engine Mounts',
+  ],
+  'Transmission & Gearbox': [
+    'Transmission Assembly',
+    'Clutch System',
+    'Gearbox Components',
+    'Driveshaft & CV Joints',
+    'Differential & Axles',
+    'Transfer Case',
+  ],
+  Brakes: [
+    'Brake Pads & Shoes',
+    'Discs, Drums & Rotors',
+    'Calipers & Cylinders',
+    'ABS Components',
+    'Brake Lines & Hoses',
+    'Parking Brake',
+  ],
+  'Suspension & Steering': [
+    'Shock Absorbers & Struts',
+    'Springs',
+    'Control Arms & Bushings',
+    'Ball Joints & Tie Rods',
+    'Wheel Hubs & Bearings',
+    'Steering Rack & Pump',
+  ],
+  'Electrical & Ignition': [
+    'Charging & Starting',
+    'Battery',
+    'Ignition Components',
+    'Sensors',
+    'Control Modules',
+    'Fuses, Relays & Wiring',
+  ],
+  'Fuel & Intake': [
+    'Fuel Pump & Tank',
+    'Injectors & Fuel Rail',
+    'Filters & Regulators',
+    'Throttle & Intake',
+    'Turbo & Intercooler',
+    'EVAP Components',
+  ],
+  'Cooling System': [
+    'Radiator & Hoses',
+    'Water Pump & Thermostat',
+    'Cooling Fans',
+    'Coolant Reservoir',
+    'Heater Core & Hoses',
+    'EGR Cooling',
+  ],
+  'Exhaust System': [
+    'Exhaust Manifold',
+    'Catalytic Converter & DPF',
+    'Muffler & Pipes',
+    'Exhaust Mounts & Clamps',
+    'Gaskets & Flex Pipes',
+    'EGR Components',
+  ],
+  'Body & Exterior': [
+    'Bumpers & Panels',
+    'Doors & Handles',
+    'Glass & Mirrors',
+    'Bonnet & Boot',
+    'Wipers & Washers',
+    'Sunroof & Roof',
+  ],
+  Lighting: [
+    'Headlights',
+    'Tail Lights',
+    'Fog Lights',
+    'Indicators',
+    'Bulbs & Ballasts',
+    'Interior Lights',
+  ],
+  'Interior & Comfort': [
+    'Dashboard & Console',
+    'Seats & Seat Belts',
+    'Airbags',
+    'Door Trims',
+    'A/C Components',
+    'HVAC Controls',
+  ],
+  'Wheels & Tyres': [
+    'Rims & Alloy Wheels',
+    'Tyres',
+    'Wheel Nuts & Studs',
+    'Hub Caps',
+    'TPMS Sensors',
+    'Valve Stems',
+  ],
+  'Filters & Service Items': [
+    'Oil Filters',
+    'Air & Cabin Filters',
+    'Fuel Filters',
+    'Fluids',
+    'PCV & Breather',
+    'Service Consumables',
+  ],
+  'Gaskets & Seals': [
+    'Engine Gaskets',
+    'Manifold Gaskets',
+    'Oil Seals',
+    'Transmission Seals',
+    'Axle & Differential Seals',
+    'O-Rings',
+  ],
+};
 
 const sparePartsConfig: ResourceConfig<SparePart> = {
   title: 'Spare Parts',
@@ -821,8 +963,8 @@ const sparePartsConfig: ResourceConfig<SparePart> = {
   formFields: [
     { label: 'Part Number', name: 'partNumber' },
     { label: 'Part Name', name: 'partName' },
-    { label: 'Category', name: 'category' },
-    { label: 'Sub-Category', name: 'subCategory' },
+    { label: 'Category', name: 'category', options: PART_CATEGORIES, resetFields: ['subCategory'] },
+    { label: 'Sub-Category', name: 'subCategory', options: (form) => PART_SUB_CATEGORIES[String(form.category)] ?? [] },
     { label: 'Brand', name: 'brand' },
     { label: 'OEM Number', name: 'oemNumber' },
     { label: 'Quantity', name: 'quantity', type: 'number' },
