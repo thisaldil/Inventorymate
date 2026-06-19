@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -488,9 +488,61 @@ const SPARE_PARTS_CATEGORIES = {
 const STATUS_COLORS = {
   "In Stock": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   "Limited":  "bg-amber-500/20  text-amber-400  border-amber-500/30",
+  "Low Stock":  "bg-amber-500/20  text-amber-400  border-amber-500/30",
   "On Order": "bg-blue-500/20   text-blue-400   border-blue-500/30",
   "Out of Stock": "bg-red-500/20 text-red-400   border-red-500/30",
+  "Out Of Stock": "bg-red-500/20 text-red-400   border-red-500/30",
 };
+
+const API_BASE = import.meta.env.VITE_API_URL ?? 'https://inventorymate.vercel.app/api';
+
+type SparePartApiItem = {
+  _id: string;
+  partNumber: string;
+  partName: string;
+  category: string;
+  subCategory?: string;
+  brand?: string;
+  quantity?: number;
+  status?: string;
+};
+
+type SparePartDisplayItem = {
+  id: string;
+  name: string;
+  partNo: string;
+  category: string;
+  subCategory?: string;
+  brand?: string;
+  quantity: number;
+  status: string;
+};
+
+function normalizeStatus(status?: string, quantity = 0) {
+  if (status) return status;
+  return quantity > 0 ? 'In Stock' : 'Out Of Stock';
+}
+
+async function fetchPublicSpareParts() {
+  const params = new URLSearchParams({ page: '1', limit: '500', sort: 'category' });
+  const response = await fetch(`${API_BASE}/spare-parts?${params.toString()}`);
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload?.message || `Request failed (${response.status})`);
+  }
+
+  return (payload.data ?? []).map((part: SparePartApiItem) => ({
+    id: part._id,
+    name: part.partName,
+    partNo: part.partNumber,
+    category: part.category || 'Uncategorized',
+    subCategory: part.subCategory,
+    brand: part.brand,
+    quantity: part.quantity ?? 0,
+    status: normalizeStatus(part.status, part.quantity ?? 0),
+  })) as SparePartDisplayItem[];
+}
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
@@ -499,43 +551,58 @@ export function PhotosSections() {
   const [selectedModel, setSelectedModel] = useState("");
   const [searchPart, setSearchPart] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>(() => {
-    // start all categories collapsed for better UX
-    const cats = ["All", ...Object.keys(SPARE_PARTS_CATEGORIES)];
-    const initial: Record<string, boolean> = {};
-    cats.forEach((c) => {
-      initial[c] = false;
-    });
-    return initial;
-  });
+  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
+  const [allParts, setAllParts] = useState<SparePartDisplayItem[]>([]);
+  const [partsLoading, setPartsLoading] = useState(true);
+  const [partsError, setPartsError] = useState("");
 
-  const categories = ["All", ...Object.keys(SPARE_PARTS_CATEGORIES)];
+  useEffect(() => {
+    let ignore = false;
 
-  const allParts = Object.entries(SPARE_PARTS_CATEGORIES).flatMap(([cat, parts]) =>
-    parts.map((p) => ({ ...p, category: cat }))
-  );
+    setPartsLoading(true);
+    setPartsError("");
+
+    fetchPublicSpareParts()
+      .then((parts) => {
+        if (ignore) return;
+        setAllParts(parts);
+        setExpandedCats((prev) => {
+          const next = { ...prev };
+          parts.forEach((part) => {
+            if (next[part.category] === undefined) next[part.category] = false;
+          });
+          return next;
+        });
+      })
+      .catch((error: any) => {
+        if (!ignore) setPartsError(error.message || "Unable to load spare parts.");
+      })
+      .finally(() => {
+        if (!ignore) setPartsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const categories = ["All", ...Array.from(new Set(allParts.map((part) => part.category))).sort()];
 
   const filteredParts = allParts.filter((p) => {
     const matchCat = activeCategory === "All" || p.category === activeCategory;
     const matchSearch =
       !searchPart ||
       p.name.toLowerCase().includes(searchPart.toLowerCase()) ||
-      p.partNo.toLowerCase().includes(searchPart.toLowerCase());
+      p.partNo.toLowerCase().includes(searchPart.toLowerCase()) ||
+      (p.brand ?? '').toLowerCase().includes(searchPart.toLowerCase());
     return matchCat && matchSearch;
   });
 
-  const groupedFiltered = Object.entries(SPARE_PARTS_CATEGORIES).reduce((acc, [cat, parts]) => {
-    const pts = parts.filter((p) => {
-      const matchCat = activeCategory === "All" || cat === activeCategory;
-      const matchSearch =
-        !searchPart ||
-        p.name.toLowerCase().includes(searchPart.toLowerCase()) ||
-        p.partNo.toLowerCase().includes(searchPart.toLowerCase());
-      return matchCat && matchSearch;
-    });
-    if (pts.length) acc[cat] = pts;
+  const groupedFiltered = filteredParts.reduce((acc, part) => {
+    if (!acc[part.category]) acc[part.category] = [];
+    acc[part.category].push(part);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, SparePartDisplayItem[]>);
 
   const toggleCat = (cat: string) => setExpandedCats((prev) => ({ ...prev, [cat]: !prev[cat] }));
   const models = selectedMake ? (MODELS_BY_MAKE as Record<string, string[]>)[selectedMake] || [] : [];
@@ -547,7 +614,7 @@ export function PhotosSections() {
           <p className="text-xs tracking-widest text-white/30 uppercase mb-2">Inventory System</p>
           <h2 className="text-3xl md:text-5xl font-display font-bold mb-3">Spare Parts <span className="text-amber-400">Availability</span></h2>
           <p className="text-white/50 max-w-xl text-sm">
-            {allParts.length.toLocaleString()} parts across {Object.keys(SPARE_PARTS_CATEGORIES).length} categories for {MAKES.length} vehicle brands
+            {allParts.length.toLocaleString()} parts across {Math.max(categories.length - 1, 0)} categories for {MAKES.length} vehicle brands
           </p>
         </div>
 
@@ -623,9 +690,15 @@ export function PhotosSections() {
 
           <div className="flex items-center gap-3 px-4 py-2 bg-white/[0.03] border border-white/10 rounded-sm shrink-0">
             <span className="text-amber-400 font-bold text-lg">{filteredParts.length}</span>
-            <span className="text-white/30 text-sm">parts found</span>
+            <span className="text-white/30 text-sm">{partsLoading ? 'loading parts' : 'parts found'}</span>
           </div>
         </div>
+
+        {partsError && (
+          <div className="mb-6 rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            {partsError}
+          </div>
+        )}
 
         {/* Category tabs */}
         <div className="flex gap-2 flex-wrap mb-6">
@@ -666,8 +739,9 @@ export function PhotosSections() {
                   <div className="px-4 pb-4">
                     <div className="grid grid-cols-12 gap-2 px-2 py-2 mb-2 text-white/30 text-xs uppercase">
                       <div className="col-span-1">#</div>
-                      <div className="col-span-5">Part Name</div>
+                      <div className="col-span-4">Part Name</div>
                       <div className="col-span-3">Part No.</div>
+                      <div className="col-span-1">Qty</div>
                       <div className="col-span-3">Status</div>
                     </div>
 
@@ -676,13 +750,14 @@ export function PhotosSections() {
                         const statusKey = (part.status as keyof typeof STATUS_COLORS) || 'In Stock';
                         const statusClass = STATUS_COLORS[statusKey] || STATUS_COLORS['In Stock'];
                         return (
-                        <div key={part.partNo} className="grid grid-cols-12 gap-2 px-2 py-2 rounded-lg items-center">
-                          <div className="col-span-1 text-white/40 text-xs">{String(idx + 1).padStart(2, '0')}</div>
-                          <div className="col-span-5 text-white/80 text-sm truncate">{part.name}</div>
-                          <div className="col-span-3 text-white/40 text-xs">{part.partNo}</div>
-                          <div className="col-span-3">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClass}`}>
-                              {part.status}
+	                        <div key={part.id} className="grid grid-cols-12 gap-2 px-2 py-2 rounded-lg items-center">
+	                          <div className="col-span-1 text-white/40 text-xs">{String(idx + 1).padStart(2, '0')}</div>
+	                          <div className="col-span-4 text-white/80 text-sm truncate">{part.name}</div>
+	                          <div className="col-span-3 text-white/40 text-xs">{part.partNo}</div>
+                            <div className="col-span-1 text-white/50 text-xs">{part.quantity}</div>
+	                          <div className="col-span-3">
+	                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusClass}`}>
+	                              {part.status}
                             </span>
                           </div>
                         </div>
@@ -695,7 +770,13 @@ export function PhotosSections() {
             );
           })}
 
-          {Object.keys(groupedFiltered).length === 0 && (
+          {partsLoading && (
+            <div className="text-center py-16 text-white/30">
+              <p className="text-lg">Loading spare parts...</p>
+            </div>
+          )}
+
+          {!partsLoading && Object.keys(groupedFiltered).length === 0 && (
             <div className="text-center py-16 text-white/20">
               <p className="text-lg">No parts found for your search.</p>
             </div>

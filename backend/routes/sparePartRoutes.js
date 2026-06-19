@@ -15,7 +15,7 @@ const controller = createCrudController(SparePart, {
 // ✅ bulk-import BEFORE /:id, using protect + no array brackets + controller.bulkImport
 router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.bulkImport);
 
-router.get('/',     protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
+router.get('/',     controller.getAll);
 router.get('/:id',  protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);
 router.post('/',    protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.createOne);
 router.put('/:id',  protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.updateOne);
