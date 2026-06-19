@@ -234,7 +234,7 @@ function Input({
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="w-full rounded-lg border border-ulss-gold/20 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-ulss-gold/40"
       />
     </div>
   );
@@ -255,12 +255,12 @@ function Select({
 }) {
   return (
     <div className="mb-3">
-      <label className="block text-xs text-gray-600 mb-1">{label}</label>
+      <label className="block text-xs text-ulss-gold/60 mb-1">{label}</label>
       <select
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ulss-gold/40"
+        className="w-full rounded-lg border border-ulss-gold/20 bg-[#0f0f0f] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-ulss-gold/40"
       >
         <option value="">All</option>
         {options.map((o) => (

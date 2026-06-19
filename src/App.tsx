@@ -22,7 +22,7 @@ export function App() {
     return (
       <Suspense
         fallback={
-          <div className="min-h-screen bg-ulss-black text-white flex items-center justify-center">
+          <div className="flex items-center justify-center min-h-screen text-white bg-ulss-black">
             Loading admin workspace...
           </div>
         }
@@ -33,7 +33,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-ulss-black text-white selection:bg-ulss-gold selection:text-ulss-black">
+    <div className="min-h-screen text-white bg-ulss-black selection:bg-ulss-gold selection:text-ulss-black">
       <Navbar />
       <main>
         <Hero />
