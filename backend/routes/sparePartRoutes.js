@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import SparePart from '../models/SparePart.js';
+import '../models/Warehouse.js';
+import '../models/Supplier.js';
 import { createCrudController } from '../controllers/crudFactory.js';
 import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/role.js';

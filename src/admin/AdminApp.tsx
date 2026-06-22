@@ -1029,7 +1029,7 @@ function ResourceSection<T extends { _id: string }>({
       .finally(() => setLoading(false));
   }, [page, filter, debouncedSearch, token, config]);
 
-  useEffect(() => { load(); }, [page, filter, debouncedSearch]);
+  useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(1); }, [debouncedSearch, filter]);
 
   // client-side sort of current page
@@ -2096,12 +2096,12 @@ function AdminAppInner() {
   const sectionEl = (() => {
     switch (section) {
       case 'dashboard': return <DashboardSection token={token} />;
-      case 'tools': return <ResourceSection config={toolsConfig} token={token} userRole={userRole} />;
-      case 'spare-parts': return <ResourceSection config={sparePartsConfig} token={token} userRole={userRole} />;
-      case 'vehicles': return <ResourceSection config={vehiclesConfig} token={token} userRole={userRole} />;
-      case 'technicians': return <ResourceSection config={techniciansConfig} token={token} userRole={userRole} />;
-      case 'maintenance': return <ResourceSection config={maintenanceConfig} token={token} userRole={userRole} />;
-      case 'suppliers': return <ResourceSection config={suppliersConfig} token={token} userRole={userRole} />;
+      case 'tools': return <ResourceSection key="tools" config={toolsConfig} token={token} userRole={userRole} />;
+      case 'spare-parts': return <ResourceSection key="spare-parts" config={sparePartsConfig} token={token} userRole={userRole} />;
+      case 'vehicles': return <ResourceSection key="vehicles" config={vehiclesConfig} token={token} userRole={userRole} />;
+      case 'technicians': return <ResourceSection key="technicians" config={techniciansConfig} token={token} userRole={userRole} />;
+      case 'maintenance': return <ResourceSection key="maintenance" config={maintenanceConfig} token={token} userRole={userRole} />;
+      case 'suppliers': return <ResourceSection key="suppliers" config={suppliersConfig} token={token} userRole={userRole} />;
       case 'import': return <ExcelImport token={token} />;
     }
   })();

@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import MaintenanceRecord from '../models/MaintenanceRecord.js';
+import '../models/Tool.js';
+import '../models/Vehicle.js';
+import '../models/Technician.js';
 import { createCrudController } from '../controllers/crudFactory.js';
 import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/role.js';
