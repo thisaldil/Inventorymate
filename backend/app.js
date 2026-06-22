@@ -16,6 +16,7 @@ import { technicianRoutes } from './routes/technicianRoutes.js';
 import { maintenanceRoutes } from './routes/maintenanceRoutes.js';
 import { dashboardRoutes } from './routes/dashboardRoutes.js';
 import { usersRoutes } from './routes/usersRoutes.js';
+import { contactRoutes } from './routes/contactRoutes.js';
 import { errorHandler } from './middleware/error.js';
 import { notFound } from './middleware/notFound.js';
 import { connectDB } from './config/db.js';
@@ -49,6 +50,8 @@ app.use(
     validate: { xForwardedForHeader: false },
   }),
 );
+
+app.use('/api/contact', contactRoutes);
 
 // ✅ Connect DB on every /api request (cached after first connection)
 app.use('/api', async (req, res, next) => {

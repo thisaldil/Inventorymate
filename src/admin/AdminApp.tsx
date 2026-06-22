@@ -1,22 +1,3 @@
-/**
- * AdminApp.tsx — Professional Edition
- * Full admin panel wired to the fixed backend.
- * Depends on api.ts in the same directory.
- *
- * NEW FEATURES:
- *  - Toast notification system (no more alert())
- *  - Custom confirmation dialog (no more confirm())
- *  - Skeleton loaders (no more bare spinners)
- *  - Sortable table columns
- *  - Debounced live search
- *  - CSV export per section
- *  - Collapsible sidebar + professional topbar + breadcrumbs
- *  - KPI trend indicators + animated counters
- *  - Polished empty states & smooth modal animations (ESC to close)
- *
- * Run: npm install chart.js
- */
-
 import {
   createContext,
   useContext,
