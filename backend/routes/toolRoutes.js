@@ -12,7 +12,7 @@ const controller = createCrudController(Tool, {
   populate: ['warehouse', 'assignedTechnician'],
 });
 
-router.get('/',    protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
+router.get('/',    controller.getAll);
 
 // ✅ bulk-import BEFORE /:id
 router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.bulkImport);
