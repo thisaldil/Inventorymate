@@ -5,7 +5,7 @@
 ![Project Banner](./screenshots/banner.png)
 <!-- Tip: a 1280x640px screenshot of your app's hero/dashboard works great as a banner -->
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-brightgreen?style=for-the-badge)](YOUR_DEPLOYED_URL_HERE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-brightgreen?style=for-the-badge)]([YOUR_DEPLOYED_URL_HERE](https://ulss-spareparts.vercel.app/))
 [![API Docs](https://img.shields.io/badge/API%20Docs-Postman-orange?style=for-the-badge)](YOUR_POSTMAN_COLLECTION_URL_HERE)
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-black?style=for-the-badge&logo=github)](YOUR_GITHUB_REPO_URL_HERE)
 
