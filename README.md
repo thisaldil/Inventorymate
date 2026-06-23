@@ -1,6 +1,7 @@
-# 🚀 [Project Name]
+# 🚀 InventoryMate
 
-> [One-line description — what it does and who it's for]
+> A professional Inventory Management System developed for a real client to manage stock levels, product records, inventory transactions, supplier information, and reporting through a centralized and scalable platform.
+
 
 ![Project Banner](./screenshots/banner.png)
 <!-- Tip: a 1280x640px screenshot of your app's hero/dashboard works great as a banner -->
