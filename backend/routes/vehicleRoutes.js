@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import Vehicle from '../models/Vehicle.js';
+import '../models/Warehouse.js';
 import { createCrudController } from '../controllers/crudFactory.js';
 import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/role.js';

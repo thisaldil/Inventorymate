@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import Tool from '../models/Tool.js';
+import '../models/Warehouse.js';
+import '../models/Technician.js';
 import { createCrudController } from '../controllers/crudFactory.js';
 import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/role.js';
@@ -12,7 +14,7 @@ const controller = createCrudController(Tool, {
   populate: ['warehouse', 'assignedTechnician'],
 });
 
-router.get('/',    protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
+router.get('/',    controller.getAll);
 
 // ✅ bulk-import BEFORE /:id
 router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.bulkImport);
