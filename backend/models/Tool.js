@@ -37,6 +37,10 @@ const toolSchema = new mongoose.Schema(
 
     brand: String,
 
+    vehicleBrand: String,
+
+    vehicleModel: String,
+
     serialNumber: {
       type: String,
       unique: true,

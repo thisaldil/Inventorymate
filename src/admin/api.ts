@@ -50,6 +50,9 @@ export type DashboardData = {
     lowStockParts: number;
     outOfStockParts: number;
     totalVehicles: number;
+    availableVehicles: number;
+    reservedVehicles: number;
+    underRepairVehicles: number;
     activeTechnicians: number;
     pendingMaintenance: number;
     overdueMaintenance: number;
@@ -102,6 +105,8 @@ export type SparePart = {
   category: string;
   subCategory?: string;
   brand?: string;
+  vehicleBrand?: string;
+  vehicleModel?: string;
   oemNumber?: string;
   barcode?: string;
   compatibleVehicles?: Array<{
@@ -138,6 +143,8 @@ export type Tool = {
   toolType?: string;
   category?: string;
   brand?: string;
+  vehicleBrand?: string;
+  vehicleModel?: string;
   serialNumber?: string;
   qrCode?: string;
   warehouse?: Warehouse | string;
@@ -218,7 +225,7 @@ export type MaintenanceRecord = {
   // One of these will be populated — both optional per schema
   toolId?: Tool | string;
   vehicleId?: Vehicle | string;
-  technician: Technician | string;
+  technician?: Technician | string;
   maintenanceType?: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   serviceDate?: string;

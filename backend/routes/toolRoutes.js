@@ -9,8 +9,8 @@ import { upload } from '../middleware/upload.js';
 
 const router = Router();
 const controller = createCrudController(Tool, {
-  searchFields: ['toolId', 'toolName', 'brand', 'serialNumber', 'category'],
-  filterFields: ['status', 'category', 'brand'],
+  searchFields: ['toolId', 'toolName', 'brand', 'vehicleBrand', 'vehicleModel', 'serialNumber', 'category'],
+  filterFields: ['status', 'category', 'brand', 'vehicleBrand', 'vehicleModel'],
   populate: ['warehouse', 'assignedTechnician'],
 });
 

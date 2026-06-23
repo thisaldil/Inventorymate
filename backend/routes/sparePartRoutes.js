@@ -9,8 +9,8 @@ import { authorize } from '../middleware/role.js';
 const router = Router();
 
 const controller = createCrudController(SparePart, {
-  searchFields: ['partNumber', 'partName', 'category', 'brand', 'oemNumber'],
-  filterFields: ['status', 'category', 'partCondition'],
+  searchFields: ['partNumber', 'partName', 'category', 'brand', 'vehicleBrand', 'vehicleModel', 'oemNumber'],
+  filterFields: ['status', 'category', 'partCondition', 'vehicleBrand', 'vehicleModel'],
   populate: ['warehouse', 'supplier'],
 });
 
