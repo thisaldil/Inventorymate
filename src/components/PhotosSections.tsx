@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { VEHICLE_BRANDS, getVehicleModels } from "../admin/vehicleCatalog";
 
 const STATUS_COLORS = {
   "In Stock": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -56,8 +57,29 @@ type VehicleSelectorItem = {
   model?: string;
 };
 
+const CATALOG_VEHICLE_FITS: VehicleSelectorItem[] = VEHICLE_BRANDS.flatMap((make) =>
+  getVehicleModels(make).map((model) => ({ make, model })),
+);
+
 function cleanText(value?: string) {
   return value?.trim() || '';
+}
+
+function normalizeForMatch(value?: string) {
+  return cleanText(value).toLowerCase();
+}
+
+function matchesSelectedVehicle(vehicle: { make?: string; model?: string }, selectedMake: string, selectedModel: string) {
+  const make = normalizeForMatch(vehicle.make);
+  const model = normalizeForMatch(vehicle.model);
+  const selectedMakeKey = normalizeForMatch(selectedMake);
+  const selectedModelKey = normalizeForMatch(selectedModel);
+
+  if (!make && !model) return false;
+  if (!selectedMakeKey && !selectedModelKey) return true;
+  if (selectedMakeKey && make !== selectedMakeKey) return false;
+  if (selectedModelKey && model !== selectedModelKey) return false;
+  return true;
 }
 
 function normalizeStatus(status?: string, quantity = 0) {
@@ -185,26 +207,28 @@ export function PhotosSections() {
       : [];
     return [...directFit, ...part.compatibleVehicles];
   });
-  const vehicleFits = [...sparePartVehicleFits, ...vehicles].filter((vehicle) => vehicle.make || vehicle.model);
+  const vehicleFits = [...CATALOG_VEHICLE_FITS, ...sparePartVehicleFits, ...vehicles].filter((vehicle) => vehicle.make || vehicle.model);
   const uniqueVehicleFits = Array.from(
     new Map(vehicleFits.map((vehicle) => [`${vehicle.make}::${vehicle.model || ''}`, vehicle])).values(),
   );
-  const makes = Array.from(new Set(uniqueVehicleFits.map((vehicle) => vehicle.make).filter(Boolean))).sort();
+  const makes = Array.from(new Set([...VEHICLE_BRANDS, ...uniqueVehicleFits.map((vehicle) => vehicle.make).filter(Boolean)])).sort();
+  const catalogModels = getVehicleModels(selectedMake || undefined);
   const modelSource = selectedMake
-    ? uniqueVehicleFits.filter((vehicle) => vehicle.make === selectedMake)
+    ? uniqueVehicleFits.filter((vehicle) => vehicle.make?.toLowerCase() === selectedMake.toLowerCase())
     : uniqueVehicleFits;
-  const models = Array.from(new Set(modelSource.map((vehicle) => vehicle.model).filter(Boolean) as string[])).sort();
+  const models = Array.from(
+    new Set([...catalogModels, ...modelSource.map((vehicle) => vehicle.model).filter(Boolean) as string[]]),
+  ).sort();
   const vehicleOptionsLoading = vehiclesLoading && makes.length === 0;
-  const hasVehicleFitData = allParts.some((part) =>
-    part.vehicleBrand || part.vehicleModel || part.compatibleVehicles.length > 0,
-  );
-
   const handleModelChange = (model: string) => {
     setSelectedModel(model);
 
     if (!selectedMake && model) {
       const matchingMakes = Array.from(
-        new Set(uniqueVehicleFits.filter((vehicle) => vehicle.model === model).map((vehicle) => vehicle.make).filter(Boolean)),
+        new Set(uniqueVehicleFits
+          .filter((vehicle) => vehicle.model?.toLowerCase() === model.toLowerCase())
+          .map((vehicle) => vehicle.make)
+          .filter(Boolean)),
       );
       if (matchingMakes.length === 1) setSelectedMake(matchingMakes[0]);
     }
@@ -219,14 +243,9 @@ export function PhotosSections() {
       (p.brand ?? '').toLowerCase().includes(searchPart.toLowerCase());
     const matchVehicle =
       (!selectedMake && !selectedModel) ||
-      !hasVehicleFitData ||
       (
-        ((!selectedMake || p.vehicleBrand === selectedMake) && (!selectedModel || p.vehicleModel === selectedModel)) ||
-        p.compatibleVehicles.some((vehicle) => {
-          const matchMake = !selectedMake || vehicle.make === selectedMake;
-          const matchModel = !selectedModel || vehicle.model === selectedModel;
-          return matchMake && matchModel;
-        })
+        matchesSelectedVehicle({ make: p.vehicleBrand, model: p.vehicleModel }, selectedMake, selectedModel) ||
+        p.compatibleVehicles.some((vehicle) => matchesSelectedVehicle(vehicle, selectedMake, selectedModel))
       );
     return matchCat && matchSearch && matchVehicle;
   });
@@ -259,7 +278,7 @@ export function PhotosSections() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-white/40 mb-1 uppercase">Make</label>
+              <label className="block text-xs text-white/40 mb-1 uppercase">Brand</label>
               <select
                 value={selectedMake}
                 onChange={(e) => {
@@ -269,7 +288,7 @@ export function PhotosSections() {
                 className="w-full bg-white/5 border border-white/10 rounded-sm px-3 py-2 text-white text-sm focus:outline-none focus:border-ulss-gold"
               >
                 <option value="" className="bg-[#0b0b0b] text-white">
-                  {vehicleOptionsLoading ? "Loading makes..." : "- Select Make -"}
+                  {vehicleOptionsLoading ? "Loading brands..." : "- Select Brand -"}
                 </option>
                 {makes.map((make) => (
                   <option key={make} value={make} className="bg-[#0b0b0b] text-white">
@@ -309,7 +328,7 @@ export function PhotosSections() {
             <div className="mt-4">
               <span className="text-xs text-white/30 mr-2">Showing parts for:</span>
               <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs rounded-full font-medium">
-                {selectedMake || 'All Makes'}{selectedModel ? ` - ${selectedModel}` : ' - All Models'}
+                {selectedMake || 'All Brands'}{selectedModel ? ` - ${selectedModel}` : ' - All Models'}
               </span>
             </div>
           )}
@@ -332,7 +351,7 @@ export function PhotosSections() {
 
           <div className="flex items-center gap-3 px-4 py-2 bg-white/[0.03] border border-white/10 rounded-sm shrink-0">
             <span className="text-amber-400 font-bold text-lg">{filteredParts.length}</span>
-            <span className="text-white/30 text-sm">{partsLoading ? 'loading parts' : 'parts found'}</span>
+            <span className="text-white/30 text-sm">{partsLoading ? 'loading parts' : selectedMake || selectedModel ? 'suggested parts' : 'parts found'}</span>
           </div>
         </div>
 
