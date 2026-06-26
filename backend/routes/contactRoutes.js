@@ -17,8 +17,20 @@ const escapeHtml = (value = '') =>
 const isEmail = (value = '') => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 const createTransport = () => {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS || !env.CONTACT_FROM_EMAIL) {
-    throw new AppError('Email service is not configured. Please add SMTP settings.', 500);
+  const missing = [
+    ['SMTP_HOST', env.SMTP_HOST],
+    ['SMTP_USER', env.SMTP_USER],
+    ['SMTP_PASS', env.SMTP_PASS],
+    ['CONTACT_FROM_EMAIL', env.CONTACT_FROM_EMAIL],
+  ]
+    .filter(([, value]) => !value)
+    .map(([name]) => name);
+
+  if (missing.length > 0) {
+    throw new AppError(
+      `Email service is not configured. Missing: ${missing.join(', ')}.`,
+      503,
+    );
   }
 
   return nodemailer.createTransport({
@@ -113,14 +125,19 @@ router.post('/demo-request', asyncHandler(async (req, res, next) => {
   const transporter = createTransport();
   const emailContent = buildEmail({ fullName, email, company, fleetSize, message });
 
-  await transporter.sendMail({
-    from: `"${env.CONTACT_FROM_NAME}" <${env.CONTACT_FROM_EMAIL}>`,
-    to: env.CONTACT_TO_EMAIL,
-    replyTo: `"${fullName}" <${email}>`,
-    subject: emailContent.subject,
-    text: emailContent.text,
-    html: emailContent.html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"${env.CONTACT_FROM_NAME}" <${env.CONTACT_FROM_EMAIL}>`,
+      to: env.CONTACT_TO_EMAIL,
+      replyTo: `"${fullName}" <${email}>`,
+      subject: emailContent.subject,
+      text: emailContent.text,
+      html: emailContent.html,
+    });
+  } catch (error) {
+    console.error('Email delivery failed:', error.message);
+    return next(new AppError('Email delivery failed. Please check SMTP settings and app password.', 502));
+  }
 
   res.json({ success: true, message: 'Demo request sent successfully.' });
 }));

@@ -28,6 +28,9 @@ export const getDashboard = asyncHandler(async (_req, res) => {
     outOfStockParts,
 
     totalVehicles,
+    availableVehicles,
+    reservedVehicles,
+    underRepairVehicles,
 
     activeTechnicians,
 
@@ -64,6 +67,9 @@ export const getDashboard = asyncHandler(async (_req, res) => {
 
     // Vehicles
     Vehicle.countDocuments(),
+    Vehicle.countDocuments({ status: 'Available' }),
+    Vehicle.countDocuments({ status: 'Reserved' }),
+    Vehicle.countDocuments({ status: 'Under Repair' }),
 
     // Technicians
     Technician.countDocuments({
@@ -163,6 +169,9 @@ export const getDashboard = asyncHandler(async (_req, res) => {
         outOfStockParts,
 
         totalVehicles,
+        availableVehicles,
+        reservedVehicles,
+        underRepairVehicles,
 
         activeTechnicians,
 

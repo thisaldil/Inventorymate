@@ -75,6 +75,7 @@ import {
 } from './api';
 
 import { ExcelImport } from './components/ExcelImport';
+import { VEHICLE_BRANDS, getVehicleModels } from './vehicleCatalog';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -512,6 +513,155 @@ function Select({
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+function SearchableSelect({
+  label,
+  name,
+  value,
+  options,
+  onValueChange,
+  placeholder = 'Search and select...',
+  allowCustom = false,
+  customLabel = 'custom value',
+}: {
+  label: string;
+  name: string;
+  value: string;
+  options: string[];
+  onValueChange: (name: string, value: string) => void;
+  placeholder?: string;
+  allowCustom?: boolean;
+  customLabel?: string;
+}) {
+  const [query, setQuery] = useState(value);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  const filteredOptions = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const matches = needle
+      ? options.filter((option) => option.toLowerCase().includes(needle))
+      : options;
+    return matches.slice(0, 80);
+  }, [options, query]);
+
+  const trimmedQuery = query.trim();
+  const exactMatch = options.find((option) => option.toLowerCase() === trimmedQuery.toLowerCase());
+  const showCustomOption = allowCustom && trimmedQuery && !exactMatch;
+
+  const choose = (option: string) => {
+    setQuery(option);
+    onValueChange(name, option);
+    setOpen(false);
+  };
+
+  const commitQuery = () => {
+    if (exactMatch) {
+      choose(exactMatch);
+      return;
+    }
+
+    if (allowCustom && trimmedQuery) {
+      choose(trimmedQuery);
+      return;
+    }
+
+    setQuery(value);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative mb-3">
+      <label className="block mb-1 text-xs text-ulss-gold/60">{label}</label>
+      <div className="relative">
+        <Search size={14} className="absolute -translate-y-1/2 left-3 top-1/2 text-white/25" />
+        <input
+          type="text"
+          value={query}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            if (!e.target.value) onValueChange(name, '');
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commitQuery();
+            }
+            if (e.key === 'Escape') {
+              setQuery(value);
+              setOpen(false);
+            }
+          }}
+          onBlur={() => {
+            window.setTimeout(() => {
+              commitQuery();
+            }, 120);
+          }}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-ulss-gold/20 bg-[#0f0f0f] py-2 pl-9 pr-16 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-ulss-gold/40 transition"
+        />
+        {value && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setQuery('');
+              onValueChange(name, '');
+              setOpen(true);
+            }}
+            className="absolute -translate-y-1/2 right-8 top-1/2 rounded text-white/35 hover:text-white"
+          >
+            <X size={14} />
+          </button>
+        )}
+        <ChevronDown size={14} className="absolute -translate-y-1/2 right-3 top-1/2 text-white/30" />
+      </div>
+
+      {open && (
+        <div className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-ulss-gold/20 bg-[#0b0b0b] shadow-2xl shadow-black/45">
+          {showCustomOption && (
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                choose(trimmedQuery);
+              }}
+              className="block w-full border-b border-ulss-gold/10 bg-ulss-gold/10 px-3 py-2 text-left text-sm text-ulss-gold hover:bg-ulss-gold/15"
+            >
+              Use custom {customLabel}: {trimmedQuery}
+            </button>
+          )}
+          {filteredOptions.length ? (
+            filteredOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  choose(option);
+                }}
+                className={`block w-full px-3 py-2 text-left text-sm transition ${
+                  option === value ? 'bg-ulss-gold/15 text-ulss-gold' : 'text-white/70 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                {option}
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-3 text-sm text-white/35">
+              {allowCustom ? `Type a ${customLabel} to add it.` : 'No matching options.'}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -958,9 +1108,13 @@ type ResourceConfig<T> = {
     label: string;
     name: string;
     type?: string;
-    options?: string[] | ((form: Record<string, string | number>) => string[]);
-    resetFields?: string[];
-  }>;
+  options?: string[] | ((form: Record<string, string | number>) => string[]);
+  searchable?: boolean;
+  allowCustom?: boolean;
+  customLabel?: string;
+  placeholder?: string;
+  resetFields?: string[];
+}>;
   canCreate: (role: string) => boolean;
   canEdit: (role: string) => boolean;
   canDelete: (role: string) => boolean;
@@ -1053,14 +1207,18 @@ function ResourceSection<T extends { _id: string }>({
 
   const openView = (item: T) => setModal({ mode: 'view', item });
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const updateFormValue = (name: string, value: string | number) => {
     const field = config.formFields.find((f) => f.name === name);
     setForm((prev) => {
       const next = { ...prev, [name]: value };
       field?.resetFields?.forEach((r) => { next[r] = ''; });
       return next;
     });
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    updateFormValue(name, value);
   };
 
   const handleSave = async () => {
@@ -1275,7 +1433,19 @@ function ResourceSection<T extends { _id: string }>({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
             {config.formFields.map((f) => {
               const options = typeof f.options === 'function' ? f.options(form) : f.options;
-              return options ? (
+              return options && f.searchable ? (
+                <SearchableSelect
+                  key={f.name}
+                  label={f.label}
+                  name={f.name}
+                  value={String(form[f.name] ?? '')}
+                  options={options}
+                  placeholder={f.placeholder}
+                  allowCustom={f.allowCustom}
+                  customLabel={f.customLabel}
+                  onValueChange={updateFormValue}
+                />
+              ) : options ? (
                 <Select key={f.name} label={f.label} name={f.name} value={String(form[f.name] ?? '')} options={options} onChange={handleFormChange} />
               ) : (
                 <Input key={f.name} label={f.label} name={f.name} type={f.type ?? 'text'} value={form[f.name] ?? ''} onChange={handleFormChange} />
@@ -1324,6 +1494,7 @@ const toolsConfig: ResourceConfig<Tool> = {
     { label: 'Name', sortKey: 'toolName', render: (t) => <span className="font-medium text-white/90">{t.toolName}</span> },
     { label: 'Category', sortKey: 'category', render: (t) => t.category ?? '—' },
     { label: 'Brand', sortKey: 'brand', render: (t) => t.brand ?? '—' },
+    { label: 'Vehicle', sortKey: 'vehicleBrand', render: (t) => [t.vehicleBrand, t.vehicleModel].filter(Boolean).join(' ') || '—' },
     { label: 'Condition', render: (t) => statusBadge(t.condition) },
     { label: 'Status', render: (t) => statusBadge(t.status) },
   ],
@@ -1333,6 +1504,8 @@ const toolsConfig: ResourceConfig<Tool> = {
     { label: 'Type', key: 'toolType' },
     { label: 'Category', key: 'category' },
     { label: 'Brand', key: 'brand' },
+    { label: 'Vehicle Brand', key: 'vehicleBrand' },
+    { label: 'Vehicle Model', key: 'vehicleModel' },
     { label: 'Serial Number', key: 'serialNumber' },
     { label: 'Condition', key: 'condition' },
     { label: 'Status', key: 'status' },
@@ -1341,13 +1514,32 @@ const toolsConfig: ResourceConfig<Tool> = {
     { label: 'Usage Hours', key: (t) => fmt.num(t.usageHours) },
     { label: 'Notes', key: 'notes' },
   ],
-  defaultForm: () => ({ toolId: '', toolName: '', category: '', brand: '', condition: 'Good', status: 'Available' }),
+  defaultForm: () => ({ toolId: '', toolName: '', category: '', brand: '', vehicleBrand: '', vehicleModel: '', condition: 'Good', status: 'Available' }),
   formFields: [
     { label: 'Tool ID', name: 'toolId' },
     { label: 'Tool Name', name: 'toolName' },
     { label: 'Type', name: 'toolType' },
     { label: 'Category', name: 'category' },
     { label: 'Brand', name: 'brand' },
+    {
+      label: 'Vehicle Brand',
+      name: 'vehicleBrand',
+      options: VEHICLE_BRANDS,
+      searchable: true,
+      allowCustom: true,
+      customLabel: 'vehicle brand',
+      placeholder: 'Search vehicle brand...',
+      resetFields: ['vehicleModel'],
+    },
+    {
+      label: 'Vehicle Model',
+      name: 'vehicleModel',
+      options: (form) => getVehicleModels(String(form.vehicleBrand ?? '')),
+      searchable: true,
+      allowCustom: true,
+      customLabel: 'vehicle model',
+      placeholder: 'Search vehicle model...',
+    },
     { label: 'Serial Number', name: 'serialNumber' },
     { label: 'Condition', name: 'condition', options: TOOL_CONDITION },
     { label: 'Status', name: 'status', options: TOOL_STATUS },
@@ -1388,7 +1580,7 @@ const PART_SUB_CATEGORIES: Record<string, string[]> = {
 const sparePartsConfig: ResourceConfig<SparePart> = {
   title: 'Spare Parts',
   endpoint: 'spare-parts',
-  searchPlaceholder: 'Search by part number, name, brand…',
+  searchPlaceholder: 'Search by part number, name, brand, vehicle…',
   filterField: 'status',
   filterOptions: PART_STATUS,
   listFn: sparePartsApi.list,
@@ -1400,6 +1592,7 @@ const sparePartsConfig: ResourceConfig<SparePart> = {
     { label: 'Name', sortKey: 'partName', render: (p) => <span className="font-medium text-white/90">{p.partName}</span> },
     { label: 'Category', sortKey: 'category', render: (p) => p.category },
     { label: 'Brand', sortKey: 'brand', render: (p) => p.brand ?? '—' },
+    { label: 'Vehicle', sortKey: 'vehicleBrand', render: (p) => [p.vehicleBrand, p.vehicleModel].filter(Boolean).join(' ') || '—' },
     { label: 'Qty', sortKey: 'quantity', render: (p) => p.quantity },
     { label: 'Status', render: (p) => statusBadge(p.status) },
   ],
@@ -1409,6 +1602,8 @@ const sparePartsConfig: ResourceConfig<SparePart> = {
     { label: 'Category', key: 'category' },
     { label: 'Sub-Category', key: 'subCategory' },
     { label: 'Brand', key: 'brand' },
+    { label: 'Vehicle Brand', key: 'vehicleBrand' },
+    { label: 'Vehicle Model', key: 'vehicleModel' },
     { label: 'OEM Number', key: 'oemNumber' },
     { label: 'Condition', key: 'partCondition' },
     { label: 'Status', key: 'status' },
@@ -1419,7 +1614,7 @@ const sparePartsConfig: ResourceConfig<SparePart> = {
     { label: 'Notes', key: 'notes' },
   ],
   defaultForm: () => ({
-    partNumber: '', partName: '', category: '', brand: '',
+    partNumber: '', partName: '', category: '', brand: '', vehicleBrand: '', vehicleModel: '',
     quantity: 0, reorderLevel: 0, unitCost: 0, sellingPrice: 0,
     partCondition: 'New', status: 'In Stock',
   }),
@@ -1429,6 +1624,25 @@ const sparePartsConfig: ResourceConfig<SparePart> = {
     { label: 'Category', name: 'category', options: PART_CATEGORIES, resetFields: ['subCategory'] },
     { label: 'Sub-Category', name: 'subCategory', options: (form) => PART_SUB_CATEGORIES[String(form.category)] ?? [] },
     { label: 'Brand', name: 'brand' },
+    {
+      label: 'Vehicle Brand',
+      name: 'vehicleBrand',
+      options: VEHICLE_BRANDS,
+      searchable: true,
+      allowCustom: true,
+      customLabel: 'vehicle brand',
+      placeholder: 'Search vehicle brand...',
+      resetFields: ['vehicleModel'],
+    },
+    {
+      label: 'Vehicle Model',
+      name: 'vehicleModel',
+      options: (form) => getVehicleModels(String(form.vehicleBrand ?? '')),
+      searchable: true,
+      allowCustom: true,
+      customLabel: 'vehicle model',
+      placeholder: 'Search vehicle model...',
+    },
     { label: 'OEM Number', name: 'oemNumber' },
     { label: 'Quantity', name: 'quantity', type: 'number' },
     { label: 'Reorder Level', name: 'reorderLevel', type: 'number' },
