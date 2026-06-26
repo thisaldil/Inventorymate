@@ -35,6 +35,10 @@ const sparePartSchema = new mongoose.Schema(
 
     brand: String,
 
+    vehicleBrand: String,
+
+    vehicleModel: String,
+
     oemNumber: String,
 
     barcode: String,

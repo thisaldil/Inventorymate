@@ -19,7 +19,7 @@ const controller = createCrudController(
 // ✅ bulk-import BEFORE /:id
 router.post('/bulk-import', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), controller.bulkImport);
 
-router.get('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getAll);
+router.get('/', controller.getAll);
 router.get('/:id', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER', 'WORKSHOP_MANAGER'), controller.getOne);
 router.post('/', protect, authorize('SUPER_ADMIN', 'INVENTORY_MANAGER'), upload.array('images', 10), (req, _res, next) => {
   if (req.files?.length) req.body.images = req.files.map((file) => `/uploads/${file.filename}`);
