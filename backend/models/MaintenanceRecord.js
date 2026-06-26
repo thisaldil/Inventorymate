@@ -21,7 +21,6 @@ const maintenanceRecordSchema = new mongoose.Schema(
     technician: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Technician',
-      required: true,
     },
 
     maintenanceType: String,

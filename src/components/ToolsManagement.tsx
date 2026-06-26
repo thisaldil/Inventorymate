@@ -1,7 +1,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Wrench, User, CalendarClock } from 'lucide-react';
+import { CalendarClock, Car, Search, User, Wrench } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'https://inventorymate.vercel.app/api';
 
@@ -11,6 +11,8 @@ type ToolApiItem = {
   toolName: string;
   category?: string;
   brand?: string;
+  vehicleBrand?: string;
+  vehicleModel?: string;
   status?: string;
   condition?: string;
   location?: string;
@@ -28,6 +30,8 @@ type ToolDisplayItem = {
   name: string;
   category?: string;
   brand?: string;
+  vehicleBrand?: string;
+  vehicleModel?: string;
   status: string;
   technician: string;
   nextService: string;
@@ -69,6 +73,8 @@ async function fetchPublicTools() {
     name: tool.toolName,
     category: tool.category,
     brand: tool.brand,
+    vehicleBrand: tool.vehicleBrand,
+    vehicleModel: tool.vehicleModel,
     status: normalizeStatus(tool.status),
     technician: getTechnicianName(tool.assignedTechnician),
     nextService: formatDate(tool.warrantyExpiry),
@@ -119,6 +125,8 @@ export function ToolsManagement() {
       tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tool.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (tool.brand ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tool.vehicleBrand ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tool.vehicleModel ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (tool.category ?? '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
       statusFilter === 'All' || tool.status === statusFilter;
@@ -142,19 +150,6 @@ export function ToolsManagement() {
         return 'bg-white/20';
     }
   };
-  // Small pool of generic tool/workshop images to cycle through
-  const toolImages = [
-  'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=80&w=400',
-  'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=400',
-  'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&q=80&w=400',
-  'https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=400',
-	  'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&q=80&w=400'];
-  const getToolImage = (tool: ToolDisplayItem, index: number) => {
-    if (tool.image) return tool.image;
-    const numericId = Number.parseInt(tool.id.replace(/\D/g, ''), 10);
-    return toolImages[Number.isFinite(numericId) ? numericId % toolImages.length : index % toolImages.length];
-  };
-
   return (
     <section className="py-24 bg-ulss-black">
       <div className="px-6 mx-auto max-w-7xl md:px-12">
@@ -203,7 +198,7 @@ export function ToolsManagement() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {displayedTools.map((tool, index) =>
+	          {displayedTools.map((tool, index) =>
           <motion.div
             key={tool.id}
             initial={{
@@ -220,14 +215,21 @@ export function ToolsManagement() {
             }}
             className="bg-white/[0.02] border border-white/5 rounded-lg p-4 hover:bg-white/[0.04] transition-colors">
             
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 overflow-hidden rounded-md shrink-0 bg-white/5">
-	                  <img
-	                  src={getToolImage(tool, index)}
-	                  alt={tool.name}
-	                  className="object-cover w-full h-full opacity-80 mix-blend-luminosity" />
-                
-                </div>
+	              <div className="flex items-start gap-4">
+	                <div className="w-16 h-16 overflow-hidden rounded-md shrink-0 bg-white/5">
+                    {tool.image ? (
+                      <img
+                        src={tool.image}
+                        alt={tool.name}
+                        className="object-cover w-full h-full opacity-80 mix-blend-luminosity"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full text-white/25">
+                        <Wrench size={24} />
+                      </div>
+                    )}
+	                
+	                </div>
                 <div className="flex-1 min-w-0">
                   <div className="mb-1 font-mono text-xs text-white/40">
                     {tool.id}
@@ -241,6 +243,14 @@ export function ToolsManagement() {
                   </div>
                     <span className="text-xs text-white/60">{tool.status}</span>
                   </div>
+                  {(tool.vehicleBrand || tool.vehicleModel) && (
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-white/45">
+                      <Car size={12} />
+                      <span className="truncate">
+                        {[tool.vehicleBrand, tool.vehicleModel].filter(Boolean).join(' ')}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
